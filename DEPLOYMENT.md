@@ -2,24 +2,41 @@
 
 ## Opción 1: Vercel (Recomendado) ⚡
 
+### Prerequisitos
+Tu backend debe estar desplegado en otro servicio (Render, Railway, Fly.io, etc.)
+
 ### 1. Instalar Vercel CLI
 ```bash
 npm install -g vercel
 ```
 
-### 2. Login y desplegar
+### 2. Configurar variables de entorno (IMPORTANTE)
+Antes de desplegar, configura la variable de entorno del API:
 ```bash
-vercel login
-vercel
+vercel env add VITE_API_URL
+# Ingresa: https://tu-backend.ejemplo.com/api
 ```
 
-### 3. Configurar dominio
+O en el Dashboard de Vercel:
+1. Ve a tu proyecto → Settings → Environment Variables
+2. Agrega: `VITE_API_URL` = `https://tu-backend.ejemplo.com/api`
+
+### 3. Desplegar
+```bash
+# Login
+vercel login
+
+# Desplegar
+vercel --prod
+```
+
+### 4. Configurar dominio
 1. Ve a tu proyecto en Vercel Dashboard
 2. Settings → Domains
 3. Agrega: `radio.thirtyonerecord.com`
 4. Vercel te dará un registro CNAME
 
-### 4. Configurar DNS
+### 5. Configurar DNS
 En tu proveedor de DNS (donde compraste thirtyonerecord.com):
 ```
 Tipo: CNAME
@@ -27,12 +44,16 @@ Nombre: radio
 Valor: cname.vercel-dns.com (o el que Vercel te proporcione)
 ```
 
-### 5. Variables de entorno en Vercel
-```bash
-vercel env add DATABASE_URL
-vercel env add JWT_SECRET
-vercel env add VITE_API_URL
-```
+### Solución de problemas Vercel
+
+**Error 404: NOT_FOUND**
+- Verifica que las variables de entorno estén configuradas
+- Redespliega: `vercel --prod`
+- Verifica que el build sea exitoso en el Dashboard
+
+**Error de API/CORS**
+- Verifica que `VITE_API_URL` apunte al backend correcto
+- Verifica que el backend tenga CORS configurado para tu dominio de Vercel
 
 ---
 
@@ -70,6 +91,7 @@ Valor: 75.2.60.5 (IP de Netlify)
 - Ubuntu 20.04 o superior
 - Docker y Docker Compose instalados
 - Dominio apuntando al servidor
+- Puertos 80 y 443 abiertos en el firewall
 
 ### 2. Clonar repositorio
 ```bash
@@ -84,12 +106,41 @@ cp .env.example .env
 nano .env  # Editar con tus valores
 ```
 
-### 4. Construir y levantar servicios
+### 4. Configurar certificados SSL
 ```bash
-docker-compose up -d --build
+# Dar permisos de ejecución al script
+chmod +x setup-ssl.sh
+
+# Editar el script con tu email
+nano setup-ssl.sh  # Cambiar tu-email@ejemplo.com por tu email real
+
+# Ejecutar configuración SSL
+./setup-ssl.sh
 ```
 
-### 5. Configurar Nginx y SSL (Certbot)
+### 5. Verificar que todo funcione
+```bash
+# Ver logs
+docker-compose logs -f
+
+# Verificar certificado SSL
+curl -I https://radio.thirtyonerecord.com
+```
+
+### Solución de problemas SSL
+
+**Error: ERR_CERT_COMMON_NAME_INVALID**
+- Verifica que el dominio apunte correctamente al servidor: `dig radio.thirtyonerecord.com`
+- Verifica que los puertos estén abiertos: `sudo ufw status`
+- Regenera el certificado: `sudo certbot delete` y vuelve a ejecutar `./setup-ssl.sh`
+
+**Error: Connection refused**
+- Verifica que los contenedores estén corriendo: `docker-compose ps`
+- Verifica los logs: `docker-compose logs frontend`
+
+---
+
+## Configurar Nginx y SSL (Certbot)
 ```bash
 # Instalar Certbot
 sudo apt install certbot python3-certbot-nginx
