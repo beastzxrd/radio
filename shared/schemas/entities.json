@@ -1,0 +1,388 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Track": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique track identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Track title"
+        },
+        "artist": {
+          "type": "string",
+          "description": "Artist name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Track description"
+        },
+        "file_url": {
+          "type": "string",
+          "description": "URL to the audio file"
+        },
+        "youtube_url": {
+          "type": "string",
+          "description": "YouTube video URL"
+        },
+        "duration": {
+          "type": "number",
+          "description": "Duration in seconds",
+          "minimum": 0
+        },
+        "album_art": {
+          "type": "string",
+          "description": "URL to album artwork"
+        },
+        "genre": {
+          "type": "string",
+          "enum": [
+            "Electronic",
+            "Ambient",
+            "Lo-Fi",
+            "Classical",
+            "Jazz",
+            "Pop",
+            "Rock",
+            "Hip Hop",
+            "Other"
+          ],
+          "default": "Other"
+        },
+        "mood": {
+          "type": "string",
+          "enum": [
+            "Chill",
+            "Energetic",
+            "Melancholic",
+            "Focus",
+            "Party",
+            "Romance",
+            "Sleep"
+          ],
+          "default": "Chill"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "license_type": {
+          "type": "string",
+          "enum": [
+            "original",
+            "royalty_free"
+          ],
+          "description": "License type of the track"
+        },
+        "license_confirmed": {
+          "type": "boolean",
+          "description": "Confirmation that the user has rights to upload"
+        },
+        "play_count": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Number of times the track has been played"
+        },
+        "created_by": {
+          "type": "string",
+          "description": "Email of the user who created the track"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of creation"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": [
+        "title",
+        "license_type",
+        "license_confirmed"
+      ],
+      "rls": {
+        "create": {
+          "user_condition": {
+            "$ne": null
+          }
+        },
+        "read": true,
+        "update": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
+        "delete": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Playlist": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique playlist identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Playlist name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Playlist description"
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of track IDs",
+          "default": []
+        },
+        "created_by": {
+          "type": "string",
+          "description": "Email of the user who created the playlist"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of creation"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "rls": {
+        "create": {
+          "user_condition": {
+            "$ne": null
+          }
+        },
+        "read": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
+        "update": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
+        "delete": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Favorite": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique favorite identifier"
+        },
+        "track_id": {
+          "type": "string",
+          "description": "ID of the favorited track"
+        },
+        "user_email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email of the user who favorited"
+        },
+        "created_by": {
+          "type": "string",
+          "description": "Email of the user who created the favorite"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of creation"
+        }
+      },
+      "required": [
+        "track_id",
+        "user_email"
+      ],
+      "rls": {
+        "create": {
+          "user_condition": {
+            "$ne": null
+          }
+        },
+        "read": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
+        "update": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
+        "delete": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Comment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique comment identifier"
+        },
+        "track_id": {
+          "type": "string",
+          "description": "ID of the track being commented on"
+        },
+        "user_email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email of the user who commented"
+        },
+        "user_name": {
+          "type": "string",
+          "description": "Display name of the user"
+        },
+        "content": {
+          "type": "string",
+          "description": "The comment text",
+          "maxLength": 1000
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "Unix timestamp (deprecated, use created_at)"
+        },
+        "created_by": {
+          "type": "string",
+          "description": "Email of the user who created the comment"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of creation"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": [
+        "track_id",
+        "content",
+        "user_email"
+      ],
+      "rls": {
+        "create": {
+          "user_condition": {
+            "$ne": null
+          }
+        },
+        "read": true,
+        "update": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        },
+        "delete": {
+          "$or": [
+            {
+              "created_by": "{{user.email}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: radio_db
+    environment:
+      POSTGRES_DB: radio_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/src/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - radio_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: radio_backend
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@postgres:5432/radio_db
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 7d
+      CLIENT_URL: https://radio.thirtyonerecord.com
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    networks:
+      - radio_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: radio_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - radio_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  radio_network:
+    driver: bridge
