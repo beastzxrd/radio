@@ -41,6 +41,26 @@ export const api = {
   updateTrack: (id, data) => apiClient.put(`/tracks/${id}`, data),
   deleteTrack: (id) => apiClient.delete(`/tracks/${id}`),
   likeTrack: (id) => apiClient.post(`/tracks/${id}/like`),
+  
+  // Upload
+  uploadAudio: (file) => {
+    const formData = new FormData();
+    formData.append('audio', file);
+    return apiClient.post('/tracks/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  uploadImage: (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return apiClient.post('/tracks/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 export default apiClient;

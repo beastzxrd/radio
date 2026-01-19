@@ -1,8 +1,61 @@
 import express from 'express';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
+import { uploadAudio, uploadImage, uploadToCloudinary } from '../middleware/upload.js';
 import pool from '../config/database.js';
 
 const router = express.Router();
+
+// Upload audio file
+router.post('/upload', authenticateToken, uploadAudio.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se proporcionó un archivo de audio' });
+    }
+
+    // Subir a Cloudinary
+    const result = await uploadToCloudinary(req.file.buffer, {
+      resource_type: 'video', // Cloudinary usa 'video' para audio
+      folder: 'radio/tracks',
+      format: 'mp3',
+    });
+
+    res.json({
+      url: result.secure_url,
+      duration: result.duration,
+      format: result.format,
+      public_id: result.public_id,
+    });
+  } catch (error) {
+    console.error('Upload audio error:', error);
+    res.status(500).json({ error: 'Error al subir el archivo de audio' });
+  }
+});
+
+// Upload image file
+router.post('/upload-image', authenticateToken, uploadImage.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se proporcionó una imagen' });
+    }
+
+    // Subir a Cloudinary
+    const result = await uploadToCloudinary(req.file.buffer, {
+      resource_type: 'image',
+      folder: 'radio/images',
+      transformation: [
+        { width: 500, height: 500, crop: 'fill' }
+      ]
+    });
+
+    res.json({
+      url: result.secure_url,
+      public_id: result.public_id,
+    });
+  } catch (error) {
+    console.error('Upload image error:', error);
+    res.status(500).json({ error: 'Error al subir la imagen' });
+  }
+});
 
 // Get all tracks
 router.get('/', optionalAuth, async (req, res) => {
